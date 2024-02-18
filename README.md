@@ -1,5 +1,5 @@
 # Rename recycle bin folder name in c
-Renames desktop recycle bin to СибАДИ
+Renames desktop recycle bin to desired name
 
 
 > [!IMPORTANT]
