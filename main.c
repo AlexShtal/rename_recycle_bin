@@ -1,4 +1,4 @@
-#include <winreg.h>
+#include <Windows.h>
 
 int main(){
     HKEY recycleBinHKey;
@@ -9,5 +9,6 @@ int main(){
     RegOpenKeyExA(HKEY_CURRENT_USER, registrySubkey, 0, KEY_SET_VALUE, &recycleBinHKey);
     RegSetValueExA(recycleBinHKey, NULL, 0, REG_SZ, pnewValue, newValueLen);
     RegCloseKey(recycleBinHKey);
+	SystemParametersInfo(SPI_SETDESKWALLPAPER, 0, NULL, SPIF_SENDWININICHANGE);
     return 0;
 }
