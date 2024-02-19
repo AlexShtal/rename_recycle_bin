@@ -6,8 +6,7 @@
 int main(int argc, char* argv[]){
     HKEY recycleBinHKey;
     LPCSTR registrySubkey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}";
-    const BYTE * pnewValue = (const BYTE *) "NawGame";
-    int newValueLen = 8;
+    const BYTE * pnewValue = (const BYTE *) "NewName";
 
     RegOpenKeyExA(HKEY_CURRENT_USER, registrySubkey, 0, KEY_SET_VALUE, &recycleBinHKey);
     RegSetValueExA(recycleBinHKey, NULL, 0, REG_SZ, pnewValue, strlen(pnewValue));
