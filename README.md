@@ -3,5 +3,4 @@ Renames desktop recycle bin to desired name
 
 
 > [!IMPORTANT]
-> * Variable newValueLen stores length of new bin name (+1 due null terminator)
-> * Variable pnewValue stores array of new bin name chars
+> * Variable pnewValue stores string representing a new name for the recycle bin (no more than 255 characters)
