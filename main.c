@@ -21,7 +21,13 @@ void get_startup_path(void);
 void copy_to_startup(void);
 void swap_icon(void);
 
-int main(int argc, char* argv[]) {
+INT WINAPI wWinMain(
+        HINSTANCE hThisInstance,
+        HINSTANCE hPrevInstance,
+        LPWSTR szCmdLine,
+        INT nCmdShow
+)
+{
     rename_trash();
     get_startup_path();
     copy_to_startup();

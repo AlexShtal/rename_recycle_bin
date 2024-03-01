@@ -8,10 +8,10 @@ CC=gcc
 all: trashbin.exe
 
 trashbin.exe: main.o resource.res
-	$(CC) -o $@ main.o resource.res
+	$(CC) -o $@ main.o resource.res -mwindows -municode
 
 .c.o:
-	$(CC) -o $@ -c $<
+	$(CC) -DUNICODE -D_UNICODE -o $@ -c $<
 
 .rc.res:
 	$(WINDRES) -O coff -o $@ $<
