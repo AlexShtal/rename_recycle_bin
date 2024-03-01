@@ -1,3 +1,4 @@
+.PHONY: all clean
 .SUFFIXES:
 .SUFFIXES: .c .rc .o .res
 
@@ -15,3 +16,5 @@ trashbin.exe: main.o resource.res
 .rc.res:
 	$(WINDRES) -O coff -o $@ $<
 
+clean:
+	-rm -f *.o *.res *.exe
