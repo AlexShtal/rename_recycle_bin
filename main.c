@@ -2,11 +2,19 @@
 #include <Shlobj.h>
 #include <string.h>
 #include <stdio.h>
+#include <wchar.h>
 
 #include "resource.h"
 
-char startup_path[MAX_PATH];
-char filename[MAX_PATH];
+#define RECYCLE_BIN_KEY \
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\" \
+    L"CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}"
+
+static LPCWSTR szRecycleBinKey = RECYCLE_BIN_KEY;
+static LPCWSTR szRecycleBinIconKey = RECYCLE_BIN_KEY L"\\DefaultIcon";
+
+WCHAR startup_path[MAX_PATH];
+WCHAR filename[MAX_PATH];
 
 void rename_trash(void);
 void get_startup_path(void);
@@ -25,20 +33,23 @@ int main(int argc, char* argv[]) {
 void rename_trash(void)
 {
     HKEY recycleBinHKey;
-    LPCSTR registrySubkey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}";
-    const BYTE * pnewValue = (const BYTE *) "SIBADI";
-    RegOpenKeyExA(HKEY_CURRENT_USER, registrySubkey, 0, KEY_SET_VALUE, &recycleBinHKey);
-    RegSetValueExA(recycleBinHKey, NULL, 0, REG_SZ, pnewValue, strlen(pnewValue));
+    WCHAR newValue[] = L"СИБАДИ";
+    DWORD newValueSize;
+
+    newValueSize = sizeof(newValue);
+
+    RegOpenKeyExW(HKEY_CURRENT_USER, szRecycleBinKey, 0, KEY_SET_VALUE, &recycleBinHKey);
+    RegSetValueExW(recycleBinHKey, NULL, 0, REG_SZ, (const BYTE *)newValue, newValueSize);
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, NULL, NULL);
     RegCloseKey(recycleBinHKey);
 }
 
 void get_startup_path(void)
 {
-    char *exename;
+    WCHAR *exename;
 
-    GetModuleFileName(NULL, filename, MAX_PATH);
-    exename = strrchr(filename, '\\');
+    GetModuleFileNameW(NULL, filename, MAX_PATH);
+    exename = wcsrchr(filename, L'\\');
 
     if (exename != NULL) {
         exename++;
@@ -46,32 +57,38 @@ void get_startup_path(void)
         exename = filename;
     }
 
-    sprintf(startup_path, "%%USERPROFILE%%\\"
-            "AppData\\Roaming\\"
-            "Microsoft\\Windows\\"
-            "Start Menu\\Programs\\Startup\\%s",
+    swprintf(startup_path, MAX_PATH, L"%%USERPROFILE%%\\"
+            L"AppData\\Roaming\\"
+            L"Microsoft\\Windows\\"
+            L"Start Menu\\Programs\\Startup\\%ls",
             exename);
+
 }
 
 void copy_to_startup(void)
 {
-    char command[345];
+    WCHAR startup_path_exp[MAX_PATH+1];
 
-    sprintf(command, "copy \"%s\" \"%s\"", filename, startup_path);
-    system(command);
+    /* Since CopyFile requires expanded path, we should call
+     * ExpandEnvironmentStrings.
+     */
+    ExpandEnvironmentStringsW(startup_path, startup_path_exp, MAX_PATH+1);
+    CopyFileW(filename, startup_path_exp, FALSE);
 }
 
 void swap_icon(void)
 {
-    LPCSTR iconRegistryKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\CLSID\\{645FF040-5081-101B-9F08-00AA002F954E}\\DefaultIcon";
-    char iconPath[256];
+    WCHAR iconPath[MAX_PATH + 4];
+    DWORD iconPathSize;
     HKEY recycleBinIconHKey;
 
-    sprintf(iconPath, "%s,-%d", startup_path, IDI_REPLACEMENT);
-    RegOpenKeyExA(HKEY_CURRENT_USER, iconRegistryKey, 0, KEY_SET_VALUE, &recycleBinIconHKey);
-    RegSetValueExA(recycleBinIconHKey, "full", 0, REG_EXPAND_SZ, (const BYTE*)iconPath, strlen(iconPath));
-    RegSetValueExA(recycleBinIconHKey, "empty", 0, REG_EXPAND_SZ, (const BYTE*)iconPath, strlen(iconPath));
-    RegSetValueExA(recycleBinIconHKey, NULL, 0, REG_EXPAND_SZ, (const BYTE*)iconPath, strlen(iconPath));
+    swprintf(iconPath, MAX_PATH + 4, L"%ls,-%d", startup_path, IDI_REPLACEMENT);
+    iconPathSize = wcslen(iconPath) * sizeof(WCHAR);
+
+    RegOpenKeyExW(HKEY_CURRENT_USER, szRecycleBinIconKey, 0, KEY_SET_VALUE, &recycleBinIconHKey);
+    RegSetValueExW(recycleBinIconHKey, L"full", 0, REG_EXPAND_SZ, (const BYTE*)iconPath, iconPathSize);
+    RegSetValueExW(recycleBinIconHKey, L"empty", 0, REG_EXPAND_SZ, (const BYTE*)iconPath, iconPathSize);
+    RegSetValueExW(recycleBinIconHKey, NULL, 0, REG_EXPAND_SZ, (const BYTE*)iconPath, iconPathSize);
     RegCloseKey(recycleBinIconHKey);
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_FLUSHNOWAIT, NULL, NULL);
 }
