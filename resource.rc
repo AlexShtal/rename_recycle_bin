@@ -1,0 +1,4 @@
+#include "resource.h"
+
+IDI_EXE         ICON "exeicon.ico"
+IDI_REPLACEMENT ICON "replacementicon.ico"
